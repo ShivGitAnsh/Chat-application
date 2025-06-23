@@ -17,7 +17,7 @@ export const loginUserThunk = createAsyncThunk("users/login", async ({username, 
       const errorOutput =
         error?.response?.data?.errMessage 
 
-      toast.error(errorOutput);
+      toast.error("Failed to Login");
       return rejectWithValue(errorOutput);
     }
 });

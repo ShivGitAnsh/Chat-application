@@ -37,7 +37,6 @@ function UserSidebar() {
      )();
   },[])
 
-  // console.log(otherUsers)
   return (
     <div className="w-[20em] flex flex-col bg-gray-900 border-r border-gray-700">
       {/* Header */}

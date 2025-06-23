@@ -4,19 +4,22 @@ import { axiosInstance } from "../../../components/utilities/axiosInstance";
 
 export const sendMessageThunk = createAsyncThunk(
   "message/send",
-  async ({ receiverId, message }, { rejectWithValue }) => {
+  async ({ receiverId, message, imageUrl }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post(`/message/send/${receiverId}`, {
-        message,
-      });
+      const payload = {};
+      if (message) payload.message = message;
+      if (imageUrl) payload.imageUrl = imageUrl;
+
+      const response = await axiosInstance.post(`/message/send/${receiverId}`, payload);
       return response.data;
     } catch (error) {
-      const errorOutput = error?.response?.data?.errMessage;
+      const errorOutput = error?.response?.data?.errMessage || "Failed to send message";
       toast.error(errorOutput);
       return rejectWithValue(errorOutput);
     }
   }
 );
+
 
 export const getMessageThunk = createAsyncThunk(
   "message/get",

@@ -10,8 +10,10 @@ function UserSidebar() {
   const [searchValue, setSearchValue] = useState('')
   const [users, setUsers] = useState([])
   const dispatch = useDispatch()
+  const {otherUsers, userProfile} = useSelector(state => state.userSlice)
+  
   const handleLogout = async () => {
-     await dispatch(logoutUserThunk());
+    await dispatch(logoutUserThunk());
   }
 
   useEffect(() => {
@@ -25,7 +27,7 @@ function UserSidebar() {
       }))
     }
 
-  },[searchValue])
+  },[searchValue, otherUsers])
 
   useEffect(() => {
      (
@@ -35,10 +37,9 @@ function UserSidebar() {
      )();
   },[])
 
-  const {otherUsers, userProfile} = useSelector(state => state.userSlice)
   // console.log(otherUsers)
   return (
-    <div className="max-w-[20em] w-full h-screen flex flex-col bg-gray-900 border-r border-gray-700">
+    <div className="w-[20em] flex flex-col bg-gray-900 border-r border-gray-700">
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-700">
         <h1 className="text-2xl font-bold text-indigo-400">CHATTR BOX</h1>

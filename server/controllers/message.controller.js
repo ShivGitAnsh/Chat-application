@@ -48,17 +48,40 @@ export const sendMessage = asyncHandler(async (req, res, next) => {
 export const getMessages = asyncHandler(async (req, res, next) => {
   const myId = req.user._id;
   const otherParticipantId = req.params.otherParticipantId;
+  const page = parseInt(req.query.page) || 1;
+  const limit = 20;
 
   if (!myId || !otherParticipantId) {
     return next(new errorHandler("All fields are required", 400));
   }
 
-  let conversation = await Conversation.findOne({
+  const conversation = await Conversation.findOne({
     participants: { $all: [myId, otherParticipantId] },
-  }).populate("messages");
+  });
+
+  if (!conversation) {
+    return res.status(200).json({
+      success: true,
+      responseData: { messages: [], hasMore: false },
+    });
+  }
+
+  const totalMessages = conversation.messages.length;
+  const hasMore = (page * limit) < totalMessages;
+
+  // Get messages sorted from newest to oldest
+  const messages = await Message.find({
+    _id: { $in: conversation.messages },
+  })
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit);
 
   res.status(200).json({
     success: true,
-    responseData: conversation,
+    responseData: {
+      messages,
+      hasMore,
+    },
   });
 });

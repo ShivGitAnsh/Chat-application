@@ -32,7 +32,7 @@ function Home() {
     };
   }, [socket]);
   return (
-    <div className='flex'>
+    <div className='flex h-screen'>
       <UserSidebar/>
       <MessageContainer/>
     </div>

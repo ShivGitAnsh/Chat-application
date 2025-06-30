@@ -25,7 +25,6 @@ export const sendMessage = asyncHandler(async (req, res, next) => {
     });
   }
 
-  // Determine message type
   const messageType = imageUrl ? 'image' : 'text';
 
   // Create message

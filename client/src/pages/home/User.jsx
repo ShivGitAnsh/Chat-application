@@ -1,16 +1,34 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setSelectedUser } from '../../store/slice/user/user.slice';
+import { setSelectedUser, setUserTyping, removeUserTyping } from '../../store/slice/user/user.slice';
+import { useEffect } from 'react';
 
 function User({ userDetails }) {
     const dispatch = useDispatch();
-    const { selectedUser } = useSelector(state => state.userSlice);
-    const { onlineUsers } = useSelector(state => state.socketSlice);
+    const { selectedUser, typingUsers } = useSelector(state => state.userSlice);
+    const { onlineUsers, socket} = useSelector(state => state.socketSlice);
     const isUserOnline = onlineUsers?.includes(userDetails?._id);
 
     const handleUserClick = () => {
         dispatch(setSelectedUser(userDetails));
     };
+
+useEffect(() => {
+  if (!socket || !userDetails?._id) return;
+
+  socket.on("typing", ({ from }) => {
+    dispatch(setUserTyping(from));
+  });
+
+  socket.on("stop_typing", ({ from }) => {
+    dispatch(removeUserTyping(from));
+  });
+
+  return () => {
+    socket.off("typing");
+    socket.off("stop_typing");
+  };
+}, [socket, userDetails?._id]);
 
     return (
         <div 
@@ -40,6 +58,10 @@ function User({ userDetails }) {
             <div>
                 <h2 className="line-clamp-1">{userDetails?.fullName}</h2>
                 <p className="text-xs text-gray-400">{userDetails?.username}</p>
+
+                {typingUsers.includes(userDetails?._id) && (
+    <p className="text-xs text-indigo-400 animate-pulse">typing...</p>
+  )}
             </div>
         </div>
     );

@@ -25,7 +25,21 @@ io.on('connection', (socket) => {
     delete userSocketMap[userId];
     io.emit("onlineUsers", Object.keys(userSocketMap));
   });
-})
+
+  socket.on("typing", ({ to, from }) => {
+    const toSocketId = userSocketMap[to];
+    if (toSocketId) {
+      io.to(toSocketId).emit("typing", { from });
+    }
+  });
+
+ socket.on("stop_typing", ({ to, from }) => {
+    const toSocketId = userSocketMap[to];
+    if (toSocketId) {
+      io.to(toSocketId).emit("stop_typing", { from });
+    }
+  });
+});
 
 const getSocketId = (userId) => {
       return userSocketMap[userId];

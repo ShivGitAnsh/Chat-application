@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { IoIosSend } from 'react-icons/io';
 import { FiImage } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
@@ -9,15 +9,54 @@ import { toast } from 'react-hot-toast';
 const SendMessage = () => {
   const [message, setMessage] = useState('');
   const fileInputRef = useRef(null);
-  const { selectedUser } = useSelector(state => state.userSlice);
+  const typingTimeoutRef = useRef(null);
+  const { selectedUser, userProfile } = useSelector(state => state.userSlice);
+  const { socket } = useSelector(state => state.socketSlice);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, []);
+
+  const handleTyping = (e) => {
+    setMessage(e.target.value);
+
+    if (!socket) return;
+
+    socket.emit('typing', {
+      to: selectedUser?._id,
+      from: userProfile?._id
+    });
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit('stop_typing', {
+        to: selectedUser?._id,
+        from: userProfile?._id
+      });
+    }, 2000);
+  };
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
+
     dispatch(sendMessageThunk({
       receiverId: selectedUser?._id,
       message
     }));
+
+    if (socket) {
+      socket.emit('stop_typing', {
+        to: selectedUser?._id,
+        from: userProfile?._id
+      });
+    }
+
     setMessage('');
   };
 
@@ -55,7 +94,7 @@ const SendMessage = () => {
           type="text"
           placeholder="Type your message..."
           className="flex-1 bg-gray-700 text-gray-200 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400"
-          onChange={e => setMessage(e.target.value)}
+          onChange={handleTyping}
           value={message}
         />
 

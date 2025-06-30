@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getMessageThunk, sendMessageThunk } from "./message.thunk";
+import { deleteMessageForEveryoneThunk, deleteMessageForMeThunk, getMessageThunk, sendMessageThunk } from "./message.thunk";
 
 export const messageSlice = createSlice({
   name: "message",
@@ -51,6 +51,14 @@ export const messageSlice = createSlice({
       .addCase(getMessageThunk.rejected, (state) => {
         state.screenLoading = false;
       });
+
+     builder
+    .addCase(deleteMessageForMeThunk.fulfilled, (state, action) => {
+      state.messages = state.messages.filter(msg => msg._id !== action.payload);
+    })
+    .addCase(deleteMessageForEveryoneThunk.fulfilled, (state, action) => {
+      state.messages = state.messages.filter(msg => msg._id !== action.payload);
+    });
   },
 });
 

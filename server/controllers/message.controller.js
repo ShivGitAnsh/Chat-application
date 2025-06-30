@@ -77,11 +77,13 @@ export const getMessages = asyncHandler(async (req, res, next) => {
 
   // Get messages sorted from newest to oldest
   const messages = await Message.find({
-    _id: { $in: conversation.messages },
-  })
-    .sort({ createdAt: -1 })
-    .skip((page - 1) * limit)
-    .limit(limit);
+  _id: { $in: conversation.messages },
+  isDeletedForEveryone: { $ne: true },
+  deletedFor: { $ne: myId },
+})
+.sort({ createdAt: -1 })
+.skip((page - 1) * limit)
+.limit(limit);
 
   res.status(200).json({
     success: true,
@@ -91,3 +93,44 @@ export const getMessages = asyncHandler(async (req, res, next) => {
     },
   });
 });
+
+
+export const deleteForMe = asyncHandler( async (req, res) => {
+  const  userId  = req.user._id;
+  const { id } = req.params;
+
+  const message = await Message.findById(id);
+  if (!message) return res.status(404).send("Message not found");
+
+  if (!message.deletedFor.includes(userId)) {
+    message.deletedFor.push(userId);
+    await message.save();
+  }
+
+  res.send({ success: true });
+});
+
+export const deleteForEveryone = asyncHandler(async (req, res) => {
+  const  userId  = req.user._id;
+  const { id } = req.params;
+
+  const message = await Message.findById(id);
+  if (!message) return res.status(404).send("Message not found");
+
+  if (message.senderId.toString() !== userId)
+    return res.status(403).send("Unauthorized");
+
+  message.isDeletedForEveryone = true;
+  await message.save();
+
+  const { receiverId } = message;
+  const senderSocketId = getSocketId(message.senderId.toString());
+  const receiverSocketId = getSocketId(receiverId.toString());
+
+  io.to(senderSocketId).emit("messageDeleted", { messageId: id });
+  io.to(receiverSocketId).emit("messageDeleted", { messageId: id });
+
+  res.send({ success: true });
+})
+
+

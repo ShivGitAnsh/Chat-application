@@ -36,3 +36,32 @@ export const getMessageThunk = createAsyncThunk(
     }
   }
 );
+
+export const deleteMessageForMeThunk = createAsyncThunk(
+  "message/deleteForMe",
+  async (messageId, { rejectWithValue }) => {
+    try {
+      await axiosInstance.post(`/message/delete/${messageId}/for-me`);
+      return messageId;
+    } catch (error) {
+      const errorOutput = error?.response?.data?.errMessage || "Failed to delete message";
+      toast.error(errorOutput);
+      return rejectWithValue(errorOutput);
+    }
+  }
+);
+
+
+export const deleteMessageForEveryoneThunk = createAsyncThunk(
+  "message/deleteForEveryone",
+  async (messageId, { rejectWithValue }) => {
+    try {
+      await axiosInstance.post(`/message/delete/${messageId}/for-everyone`);
+      return messageId;
+    } catch (error) {
+      const errorOutput = error?.response?.data?.errMessage || "Failed to delete message";
+      toast.error(errorOutput);
+      return rejectWithValue(errorOutput);
+    }
+  }
+);

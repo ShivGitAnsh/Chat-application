@@ -7,6 +7,7 @@ import messageRoutes from "./routes/message.route.js"
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import uploadRoutes from "./routes/upload.route.js"
+import summarizeRoutes from "./routes/summarize.route.js";
 
 connectDB();
 
@@ -26,6 +27,7 @@ const PORT = process.env.PORT || 5000;
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/message", messageRoutes);
 app.use("/api/v1/upload", uploadRoutes)
+app.use("/api/v1/summarize", summarizeRoutes);
 app.use(errorMiddleware);
 
 server.listen(PORT, () => {

@@ -8,15 +8,30 @@ export const messageSlice = createSlice({
     screenLoading: false,
     messages: [],
     hasMore: true,
+    unreadMessages: {},
   },
   reducers: {
     setNewMessage: (state, action) => {
+      const newMessage = action.payload;
       const oldMessages = state.messages ?? [];
-      state.messages = [...oldMessages, action.payload];
+      state.messages = [...oldMessages, newMessage];
+      const selectedUserId = JSON.parse(localStorage.getItem("selectedUser"))?._id;
+      const isSelectedUser = selectedUserId === newMessage.senderId;
+
+      if (!isSelectedUser) {
+        const senderId = newMessage.senderId;
+        if (!state.unreadMessages[senderId]) {
+          state.unreadMessages[senderId] = [];
+        }
+        state.unreadMessages[senderId].push(newMessage);
+      }
     },
     clearMessages: (state) => {
       state.messages = [];
       state.hasMore = true;
+    },
+    clearUnreadMessagesForUser: (state, action) => {
+      delete state.unreadMessages[action.payload]; 
     },
   },
   extraReducers: (builder) => {
@@ -52,15 +67,15 @@ export const messageSlice = createSlice({
         state.screenLoading = false;
       });
 
-     builder
-    .addCase(deleteMessageForMeThunk.fulfilled, (state, action) => {
-      state.messages = state.messages.filter(msg => msg._id !== action.payload);
-    })
-    .addCase(deleteMessageForEveryoneThunk.fulfilled, (state, action) => {
-      state.messages = state.messages.filter(msg => msg._id !== action.payload);
-    });
+    builder
+      .addCase(deleteMessageForMeThunk.fulfilled, (state, action) => {
+        state.messages = state.messages.filter(msg => msg._id !== action.payload);
+      })
+      .addCase(deleteMessageForEveryoneThunk.fulfilled, (state, action) => {
+        state.messages = state.messages.filter(msg => msg._id !== action.payload);
+      });
   },
 });
 
-export const { setNewMessage, clearMessages } = messageSlice.actions;
+export const { setNewMessage, clearMessages, clearUnreadMessagesForUser } = messageSlice.actions;
 export default messageSlice.reducer;

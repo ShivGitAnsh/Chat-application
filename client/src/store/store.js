@@ -7,7 +7,7 @@ export const store = configureStore({
   reducer: {
     userSlice,
     messageSlice,
-    socketSlice
+    socketSlice,
   },
   middleware: (getDefaultMiddleware) => (
     getDefaultMiddleware({

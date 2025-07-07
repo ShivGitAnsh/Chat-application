@@ -1,3 +1,9 @@
 {
-  
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/signin",
+      "permanent": false
+    }
+  ]
 }
